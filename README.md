@@ -66,3 +66,38 @@ Rust *Crates* are collections of Rust source code files. This project is a *bina
 
 You won't know which traits to use right off the back, but `cargo doc --open` will build documentation provided by all dependencies locally and open them in the browser.
 
+### Chapter 4: Understanding Ownership
+*Ownership* is Rust's standout feature, and enables memory safety guarantees without a garbage collector. The system of ownership itself has a set of rules enforceable by the compiler. These features **do not** slow down your program while it's running. 
+
+**Stack** is *LIFO*, *last in, first out*, just like a stack of plates. Data with unknown or changing size at runtime must be stored on the **heap**. The heap is less organized, and the OS just finds an empty spot of the necessary size to use when needed. This is known as *allocating*. Pushing values onto the stack is **NOT** considered allocating. Pushing to the stack is faster than allocating on the heap because the OS doesn't have to search for a place to store new data. Accessing data in the *heap* is also slower than on the stack, because you have to follow a pointer for the heap data. Processors are faster when they don't jump around as much. Recall CPU architecture and locality. Ultimately, **managing heap data is why ownership exists and helps explain why it works the way it does.**
+
+**Ownership Rules**
+- Each value in Rust has a variable that's called its *owner*
+- There can only be one owner at a time
+- When the owner goes out of scope, the value will be dropped
+
+Note: The reason for memory issues comes down to asking the OS to do things for us on a certain memory region. We need to pair exactly one `allocate` with exactly one `free`. No double frees, memory leaks, or invalid variables.
+
+In Rust, the memory is automatically returned once the variable that owns it goes out of scope. In Rust, this memory de-allocation is called `drop`. This is the same as C++'s *Resource Acquisition Is Initialization (RAII)*, which deallocates resources at the end of an item's lifetime.
+
+Rust never automatically creates *deep* copies of your data. Everything is a move by default, and thus inexpensive in terms of runtime performance. If we **do** want to perform a *deep* copy, including copying the heap data, we can use the `clone` method.
+
+**Copy** trait allows an older variable to be used even after assignment. You can not implement *both* the **Copy** and **Drop** traits.
+
+When a variable that includes data on the heap goes out of scope, the value will be cleaned up by `drop` unless the data has been moved to be owned by another variable.
+
+**References and Borrowing**
+Just like C++, Rust has references as arguments to functions. This allows function parameters to use a value without taking ownership of it. The `&` operator creates a reference that refers to the value of a variable, but does not own it. Reference parameters aresaid to **borrow** the given value. We can NOT edit a borrowed value. References are immutable by default. **Mutable References** allow a *borrowed* value to be edited, **but** the big limitation is that you can only have one mutable reference to a piece of data in any given scope. The benefit: NO DATA RACES guaranteed by the compiler.
+
+**Data Race** is similar to a race condition, and happens under the following behavior:
+- Two or more pointers access the same data at the same time
+- At least one pointer is being used to write to that data
+- No mechanism to synchronize the data access
+
+You can only have both a *mutable reference* and an *immutable reference* within the same scope **if** the immutable reference is not used after the mutable reference is made.
+
+**Dangling Pointers** are pointers that referene a location in memory that may have been given to someone else. This can be done by freeing some memory while preserving a pointer to that memory. Rust **disallows** this via the compiler ensuring the underlying data does not go out of scope before the reference to the data does.
+
+**Rules of References**
+- At any given time you can have *either* one mutable reference *or* n immutable references
+- References must always be valid, and not dangle
