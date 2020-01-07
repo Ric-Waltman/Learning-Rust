@@ -101,3 +101,33 @@ You can only have both a *mutable reference* and an *immutable reference* within
 **Rules of References**
 - At any given time you can have *either* one mutable reference *or* n immutable references
 - References must always be valid, and not dangle
+
+**The Slice Type** allows you to reference a contiguous sequence of elements in a collection instead of the *entire* collection. We create slices using a *range* with brackets: `[starting_index..ending_index]`, where *ending_index* is non-inclusive. String literals are actually slices: in `let s = "Hello, world!";` the type of `s` is `&str`, because it's a slice pointing the specific part of the built binary where the string literal is. More accurately, `s` is an immutable reference to a slice.
+
+While String Slices are specific to strings, there are other slice types, like in this example:
+`let a = [1,2,3,4,5];`
+`let slice = &a[1..3];`
+slice, here, has type `&[i32]`.
+
+Slices store a reference to the first element and a length.
+
+### Chapter 5: Using Structs to Structure Related Data
+A *structure* is a custom data type that lets you name and package multiple related values into a meaningful group. When instantiating a struct, the values don't have to follow the same ordering as the definition. When instantiating a struct, it must either be completely *immutable*, or completely *mutable* - there is no partial in-between.
+
+*Field Init Shorthand* allows struct fields to be initialized by parameter variables when their names match. This method is less verbose.
+
+*Struct update syntax* updates remaining fields from an existing instantiation of a struct. Uses `..instantiation1` syntax.
+
+**Tuple Structs** are essentially names tuples, but they lack field names: `struct Color(i32, i32, i32);`. Each tuple struct has it's own type, even if the fields are all the same. Field access is the same as *tuples*.
+
+**Unit-Like Structs** have no fields. They are useful if you want to implement a trait on some type without adding any other data fields.
+
+**Methods** are functions specific to the context of a struct (or enum or trait obj). The first parameter is always `self`, aka `this`, representing the instance of the struct the method is called on. Methods can take ownership of `self`, borrow `self` immutably, or borrow `self` mutably, just as they can any other parameter.
+
+Unlike in C++, we don't need a `->` operator. Rust has **automatic referencing and dereferencing**. When you call `object.something()`, Rust automatically adds in `&`, `&mut`, or `*` so `object` matches the signature of the method. Thus, the following are the same:
+`p1.distance(&p2);`
+`(&p1).distance(&p2);`
+
+**Associated Functions** are functions defined inside an `impl` block which do **not** take `self` as a parameter. These are useful for writing constructors. These functions are called like statics in C++: `struct_name::assoc_function();`. Note the function is namespaced by the struct with `::`.
+
+You can have multiple separate `impl` blocks for the same `struct` type.
