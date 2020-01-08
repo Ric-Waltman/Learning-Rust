@@ -133,3 +133,76 @@ p1.distance(&p2);
 **Associated Functions** are functions defined inside an `impl` block which do **not** take `self` as a parameter. These are useful for writing constructors. These functions are called like statics in C++: `struct_name::assoc_function();`. Note the function is namespaced by the struct with `::`.
 
 You can have multiple separate `impl` blocks for the same `struct` type.
+
+# Chapter 6: Enums and Pattern Matching
+An *enum* is an *enumeration* of all possible *variants* of a type. Rust's *enums* are most similar to *algebraic data types* in functional languages, like Scala.
+
+### 6.1 Defining an Enum
+```
+enum IpAddrVersion { V4, V6 }
+let four = IpAddrVersion::V4;
+```
+Enum variants are namespaced under its identifier. Each enum variant can associate a unique data type to it.
+```
+enum IpAddrImproved {
+    V4(u8, u8, u8, u8),
+    V6(String)
+}
+```
+
+Enums can have their own methods, just like structs, using `impl`.
+
+The **Option** Enum is a replacement for **NULL/nullptr**. It represents a value that could be *something* or *nothing*.
+
+**Big Pro**: Compiler checks whether you've handled all cases of the Enum
+
+**Why is Null Bad?**
+- The inventor of `null`, Tony Hoare, calls it his "Billion Dollar Mistake"
+- Using `null` as a *non-null* value causes an error
+
+The concept is sound, however. We need to represent that a value is invalid or absent. Rust maintains the *concept*, but forgoes the *implementation* of null. Instead, Rust uses:
+```
+enum Option<T> {
+	Some(T),
+	None,
+}
+```
+`Option<T>` is included in the prelude (AKA by default). You can use `Some` and `None` directly without namespace resolution.
+
+When we assign `Some`, we do so like this: `let some_num = Some(5);`
+When we assign `None`, we do so like this: `let none_num: Option<i32> = None;` so the compiler knows what type to expect when a valid value is present.
+
+*The result?* `Option<T>` and `T` are different types. So `None`, the `null` replacement, can never be used as a value like `null` can. We must always first convert `Option<T>` -> `T`, which is guaranteed to be valid when `Some` holds the value.
+
+*GOODBYE* null dereferencing errors!!
+
+### 6.2 Match Control Flow Operator
+The `match` operator is compiler-guaranteed to *exhaustively* cover all possible cases. `_` is a *wildcard* and matches any remaining case, similar to `default` for switch statements.
+```
+let some_u8_value = 0u8;
+match some_u8_value {
+    1 => println!("one"),
+    3 => println!("three"),
+    5 => println!("five"),
+    7 => println!("seven"),
+    _ => (),
+}
+```
+Note: It is often very useful to combine `enum` with `match`
+
+### 6.3 Concise Control Flow with `if let`
+`if let` allows us to combine `if` and `let` to handle values matching on pattern, while ignoring the rest, more succinctly. `if let` takes a *pattern* = *expression*.
+```
+let mut count = 0;
+match coin {
+    Coin::Quarter(state) => println!("State quarter from {:?}!", state),
+    _ => (),
+}
+```
+Gets turned into:
+```
+let mut count = 0;
+if let Coin::Quarter(state) = coin {
+    println!("State quarter from {:?}!", state);
+}
+```
